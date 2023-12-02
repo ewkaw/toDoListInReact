@@ -1,24 +1,53 @@
-import logo from './logo.svg';
-import './App.css';
+import { TaskListItem } from "./tasks/TaskListItem";
+import { NewTaskForm } from "./tasks/NewTaskForm";
+import { useTaskApi } from "./tasks/useTaskApi";
+import { FilterTaskForm } from "./tasks/FilterTaskForm";
+import { deleteTaskFromApi, addNewTaskToApi, editTaskApi} from "./tasks/apiCalls";
 
 function App() {
+  const { tasks, setTasks } = useTaskApi();
+
+  const addNewTask = (newTask) => {
+    addNewTaskToApi(newTask);
+    setTasks(prev => [...prev, newTask]); 
+  }
+
+  const deleteTask = (id) => {
+    deleteTaskFromApi(id);
+    setTasks(prev => prev.filter(el => el.id !== id));
+  };
+
+  const editTask = (id , title) => {
+    editTaskApi(id, title);
+    setTasks(prev => prev.map( task => {
+      if(task.id === id)
+        return {...task, title};
+      else return task;
+    }))
+  };
+
+  
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <FilterTaskForm filter={setTasks} />
+      <NewTaskForm onAdd={addNewTask} len={tasks.length}/>
+
+        <h2>Lista zadań:</h2>
+        <ul>
+          {tasks
+            .map(task => {
+              return (
+                <TaskListItem
+                  key={ task.id }
+                  task={ task }
+                  onDelete={ deleteTask }
+                  onEdit={ editTask } 
+                />
+              )
+            })
+          }
+        </ul>
+    </>   
   );
 }
 
